@@ -135,7 +135,7 @@ export function getHolidayCountdowns(currentDate: Date = new Date()): Array<{ na
     '春节': new Date(currentYear, 0, 29),         // 1月29日（农历正月初一）
     '元宵': new Date(currentYear, 1, 12),         // 2月12日（农历正月十五）
   '端午': new Date(currentYear, 5, 20),         // 6月20日（农历五月初五）
-      '七夕': new Date(currentYear, 7, 30),         // 8月30日（农历七月初七）
+  '七夕': new Date(currentYear, 7, 30),         // 8月30日（农历七月初七）
      '中秋': new Date(currentYear, 9, 7),          // 10月7日（农历八月十五）
      '国庆': new Date(currentYear, 9, 1),          // 10月1日（公历固定）
      '重阳': new Date(currentYear, 9, 12),         // 10月12日（农历九月初九）
@@ -235,25 +235,44 @@ export function generateReminderText(currentDate: Date = new Date()): string {
   
   // 构建文本内容
    // 每日不同的开场白模板
-   const openingTemplates = [
-     "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！工作再忙也要记得休息，毕竟身体是革命的本钱。",
-     "欢迎来到${dateStr}的摸鱼时间！${greeting}，今天也要合理安排工作与休息哦！",
-     "${greeting}，摸鱼人！今天是${dateStr}，${weekday}。记得多喝水，多走动，保持健康工作状态。",
-     "【摸鱼办】提醒您：${dateStr}，${weekday}。${greeting}！工作再努力，也别忘了给自己放个小假。",
-     "美好的一天从摸鱼开始！今天是${dateStr}，${weekday}。${greeting}，愿您工作顺利，摸鱼愉快！",
-     "${greeting}，今天是${dateStr}，${weekday}。摸鱼小贴士：每小时起身活动5分钟，健康工作每一天。",
-     "【摸鱼办】温馨提示：${dateStr}，${weekday}。${greeting}！适当摸鱼有助于提高工作效率哦！",
-     "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！记得劳逸结合，才能事半功倍。",
-     "又是一天摸鱼日！${dateStr}，${weekday}，${greeting}！让我们在忙碌工作中寻找小确幸。",
-     "时间过得真快，今天是${dateStr}，${weekday}。${greeting}，摸鱼人！享受此刻的宁静时光吧。",
-     "${greeting}！今天是${dateStr}，${weekday}。摸鱼办提醒您：适时休息，保持高效工作状态。",
-     "欢迎来到${dateStr}的摸鱼时刻！${greeting}，今天也要元气满满地工作与生活哦！"
-   ];
+    const openingTemplates = [
+      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！工作再忙也要记得休息，毕竟身体是革命的本钱。",
+      "欢迎来到${dateStr}的摸鱼时间！${greeting}，今天也要合理安排工作与休息哦！",
+      "${greeting}，摸鱼人！今天是${dateStr}，${weekday}。记得多喝水，多走动，保持健康工作状态。",
+      "【摸鱼办】提醒您：${dateStr}，${weekday}。${greeting}！工作再努力，也别忘了给自己放个小假。",
+      "美好的一天从摸鱼开始！今天是${dateStr}，${weekday}。${greeting}，愿您工作顺利，摸鱼愉快！",
+      "${greeting}，今天是${dateStr}，${weekday}。摸鱼小贴士：每小时起身活动5分钟，健康工作每一天。",
+      "【摸鱼办】温馨提示：${dateStr}，${weekday}。${greeting}！适当摸鱼有助于提高工作效率哦！",
+      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！记得劳逸结合，才能事半功倍。",
+      "又是一天摸鱼日！${dateStr}，${weekday}，${greeting}！让我们在忙碌工作中寻找小确幸。",
+      "时间过得真快，今天是${dateStr}，${weekday}。${greeting}，摸鱼人！享受此刻的宁静时光吧。",
+      "${greeting}！今天是${dateStr}，${weekday}。摸鱼办提醒您：适时休息，保持高效工作状态。",
+      "欢迎来到${dateStr}的摸鱼时刻！${greeting}，今天也要元气满满地工作与生活哦！",
+      "早安摸鱼人！今天是${dateStr}，${weekday}。新的一天，愿你工作轻松，摸鱼愉快！",
+      "${greeting}！${dateStr}，${weekday}。摸鱼办温馨提示：工作再忙，也别忘了抬头看看窗外的风景。",
+      "今天是${dateStr}，${weekday}。${greeting}！摸鱼人必备心态：工作是做不完的，但生活还要继续。",
+      "【摸鱼办】报道：${dateStr}，${weekday}。${greeting}！今日摸鱼指数：★★★★☆，适合轻度摸鱼。",
+      "又是元气满满的一天！今天是${dateStr}，${weekday}。${greeting}，摸鱼人！记得微笑面对工作挑战。",
+      "${greeting}，摸鱼人！${dateStr}，${weekday}。今日宜摸鱼，忌过度劳累，保持好心情最重要。",
+      "今天是${dateStr}，${weekday}。${greeting}！摸鱼办提醒您：合理分配时间，工作娱乐两不误。",
+      "欢迎来到${dateStr}的摸鱼频道！${greeting}，今天也是努力工作和适当摸鱼的一天！",
+      "${greeting}，今天是${dateStr}，${weekday}。摸鱼小技巧：把大任务分解成小目标，逐个击破。",
+      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！愿您的工作像咖啡一样香醇，摸鱼像甜点一样美好。",
+      "【摸鱼办】温馨提示：${dateStr}，${weekday}。${greeting}！久坐伤腰，记得定时起身活动哦。",
+      "新的一天，新的摸鱼计划！今天是${dateStr}，${weekday}。${greeting}，摸鱼人！加油！",
+      "${greeting}！今天是${dateStr}，${weekday}。摸鱼办祝您工作顺利，摸鱼愉快，度过美好的一天！",
+      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！工作再忙，也要给自己留一点放空的时间。",
+      "【摸鱼办】特别报道：${dateStr}，${weekday}。${greeting}！今日宜摸鱼，宜放松，宜微笑。",
+      "${greeting}，摸鱼人！今天是${dateStr}，${weekday}。记得工作再忙也要按时吃饭，保持健康作息。",
+      "今天是${dateStr}，${weekday}。${greeting}！摸鱼办提醒您：保持积极心态，工作再累也不怕。",
+      "欢迎来到${dateStr}的摸鱼小天地！${greeting}，愿您今天工作轻松，摸鱼愉快！"
+    ];
    
    // 根据一年中的第几天选择不同的开场白，确保每天不同但整天保持一致
    const dayOfYear = getDayOfYear(currentDate);
-   const templateIndex = dayOfYear % openingTemplates.length;
-   const openingLine = openingTemplates[templateIndex]
+    // 使用更复杂的计算确保每天不同的开场白
+    const templateIndex = (dayOfYear * 31) % openingTemplates.length;
+    const openingLine = openingTemplates[templateIndex]
      .replace('${dateStr}', dateStr)
      .replace('${weekday}', weekday)
      .replace('${greeting}', greeting);
