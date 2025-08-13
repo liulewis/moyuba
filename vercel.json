@@ -1,8 +1,14 @@
 {
+  "framework": "vite",
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "installCommand": "npm install -g pnpm && pnpm install",
   "routes": [
     { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--openssl-legacy-provider"
+    }
+  }
 }
