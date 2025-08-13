@@ -1,0 +1,18 @@
+{
+  "build": {
+    "command": "npm install -g pnpm && pnpm build",
+    "outputDir": "dist"
+  },
+  "router": {
+    "rules": [
+      {
+        "path": "/*",
+        "dest": "/index.html",
+        "enable": true
+      }
+    ]
+  },
+  "server": {
+    "port": 8080
+  }
+}
