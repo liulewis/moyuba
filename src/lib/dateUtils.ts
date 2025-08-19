@@ -55,36 +55,40 @@ function isDatePassed(targetDate: Date, currentDate: Date = new Date()): boolean
 export function getPaydayCountdowns(currentDate: Date = new Date()): Record<string, number> {
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
-  const currentDay = currentDate.getDate();
   
   const payDays = [1, 5, 8, 10, 15, 20, 25, 30];
   const countdowns: Record<string, number> = {};
   
   payDays.forEach(day => {
-    // 创建当月的发薪日
-    let payday = new Date(currentYear, currentMonth, day);
+    // 创建当月的发薪日，设置为当天的开始时间
+    let payday = new Date(currentYear, currentMonth, day, 0, 0, 0, 0);
     
-    // 处理小月的31日发薪日
+    // 处理小月的情况（如2月没有30日）
     if (payday.getDate() !== day) {
       // 如果日期自动调整了，说明是小月，设置为当月最后一天
-      payday = new Date(currentYear, currentMonth + 1, 0);
+      payday = new Date(currentYear, currentMonth + 1, 0, 0, 0, 0, 0);
     }
     
-    // 如果发薪日已过，则计算下个月的
-    if (payday < currentDate) {
-      const nextMonth = currentMonth + 1;
-      let nextMonthYear = currentYear;
+    // 如果发薪日已过（包括今天），则计算下个月的
+    const currentDateStart = new Date(currentDate);
+    currentDateStart.setHours(0, 0, 0, 0);
+    
+    if (payday <= currentDateStart) {
+      let nextMonth = currentMonth + 1;
+      let nextYear = currentYear;
       
+      // 处理跨年情况
       if (nextMonth > 11) {
-        nextMonthYear = currentYear + 1;
+        nextMonth = 0;
+        nextYear = currentYear + 1;
       }
       
       // 创建下个月的发薪日
-      payday = new Date(nextMonthYear, nextMonth, day);
+      payday = new Date(nextYear, nextMonth, day, 0, 0, 0, 0);
       
       // 再次检查下个月是否是小月
       if (payday.getDate() !== day) {
-        payday = new Date(nextMonthYear, nextMonth + 1, 0);
+        payday = new Date(nextYear, nextMonth + 1, 0, 0, 0, 0, 0);
       }
     }
     
@@ -104,6 +108,9 @@ export function getWeekendCountdowns(currentDate: Date = new Date()): { doubleWe
   if (dayOfWeek === 6) {
     // 如果今天是周六，距离下一个周六是7天
     daysToSaturday = 7;
+  } else if (dayOfWeek === 0) {
+    // 如果今天是周日，距离下一个周六是6天
+    daysToSaturday = 6;
   } else {
     daysToSaturday = 6 - dayOfWeek;
   }
@@ -114,7 +121,7 @@ export function getWeekendCountdowns(currentDate: Date = new Date()): { doubleWe
     // 如果今天是周日，距离下一个周日是7天
     daysToSunday = 7;
   } else {
-    daysToSunday = 0 - dayOfWeek + 7;
+    daysToSunday = 7 - dayOfWeek;
   }
   
   return {
@@ -128,54 +135,65 @@ export function getHolidayCountdowns(currentDate: Date = new Date()): Array<{ na
   const currentYear = currentDate.getFullYear();
   const nextYear = currentYear + 1;
   
-  // 2025年农历节日对应的公历日期（精确版）
-  // 数据来源：中国政府网节假日安排通知
-  const holidays2025 = {
-    '元旦': new Date(currentYear, 0, 1),          // 1月1日（公历固定）
-    '春节': new Date(currentYear, 0, 29),         // 1月29日（农历正月初一）
-    '元宵': new Date(currentYear, 1, 12),         // 2月12日（农历正月十五）
-  '端午': new Date(currentYear, 5, 20),         // 6月20日（农历五月初五）
-  '七夕': new Date(currentYear, 7, 30),         // 8月30日（农历七月初七）
-     '中秋': new Date(currentYear, 9, 7),          // 10月7日（农历八月十五）
-     '国庆': new Date(currentYear, 9, 1),          // 10月1日（公历固定）
-     '重阳': new Date(currentYear, 9, 12),         // 10月12日（农历九月初九）
+  // 获取当前年份和下一年的节假日日期
+  const getHolidaysForYear = (year: number) => {
+    if (year === 2025) {
+      return {
+        '元旦': new Date(2025, 0, 1),          // 1月1日
+        '春节': new Date(2025, 0, 29),         // 1月29日
+        '清明': new Date(2025, 3, 5),          // 4月5日
+        '劳动节': new Date(2025, 4, 1),        // 5月1日
+        '端午': new Date(2025, 4, 31),         // 5月31日
+        '中秋': new Date(2025, 9, 6),          // 10月6日
+        '国庆': new Date(2025, 9, 1),          // 10月1日
+      };
+    } else if (year === 2026) {
+      return {
+        '元旦': new Date(2026, 0, 1),          // 1月1日
+        '春节': new Date(2026, 1, 17),         // 2月17日
+        '清明': new Date(2026, 3, 5),          // 4月5日
+        '劳动节': new Date(2026, 4, 1),        // 5月1日
+        '端午': new Date(2026, 4, 19),         // 5月19日
+        '中秋': new Date(2026, 8, 25),         // 9月25日
+        '国庆': new Date(2026, 9, 1),          // 10月1日
+      };
+    } else {
+      // 默认使用通用日期（公历固定节日）
+      return {
+        '元旦': new Date(year, 0, 1),
+        '劳动节': new Date(year, 4, 1),
+        '国庆': new Date(year, 9, 1),
+      };
+    }
   };
   
-  // 2026年重要农历节日公历日期（用于跨年计算）
-  const holidays2026 = {
-    '元旦': new Date(nextYear, 0, 1),
-    '春节': new Date(nextYear, 1, 17),            // 2026年春节是2月17日
-  };
+  const currentYearHolidays = getHolidaysForYear(currentYear);
+  const nextYearHolidays = getHolidaysForYear(nextYear);
   
   const countdowns: Array<{ name: string, days: number }> = [];
   
   // 处理当前年份的节日
-  Object.entries(holidays2025).forEach(([name, date]) => {
-    // 检查节日是否已过
-    if (date < currentDate) {
-      // 对于元旦和春节，使用下一年的日期
-      if (name === '元旦') {
-        countdowns.push({ name, days: getDaysDifference(currentDate, holidays2026[name]) });
-      } else if (name === '春节') {
-        countdowns.push({ name, days: getDaysDifference(currentDate, holidays2026[name]) });
-      } else {
-        // 其他节日计算到下一年对应日期的天数
-        const nextYearDate = new Date(date);
-        nextYearDate.setFullYear(nextYear);
-        countdowns.push({ name, days: getDaysDifference(currentDate, nextYearDate) });
-      }
-    } else {
+  Object.entries(currentYearHolidays).forEach(([name, date]) => {
+    if (date >= currentDate) {
       // 节日尚未到来，直接计算天数差
       countdowns.push({ name, days: getDaysDifference(currentDate, date) });
     }
   });
   
-
+  // 处理下一年的节日
+  Object.entries(nextYearHolidays).forEach(([name, date]) => {
+    // 只有当前年份对应节日已过时，才添加下一年的节日
+    const currentYearDate = currentYearHolidays[name];
+    if (!currentYearDate || currentYearDate < currentDate) {
+      countdowns.push({ name, days: getDaysDifference(currentDate, date) });
+    }
+  });
   
   // 按天数升序排序（最近的节日排在前面）
   countdowns.sort((a, b) => a.days - b.days);
   
-  return countdowns;
+  // 只返回最近的6个节日，避免列表过长
+  return countdowns.slice(0, 6);
 }
 
 // 计算距离年底和新年的天数
@@ -183,30 +201,48 @@ export function getYearEndCountdowns(currentDate: Date = new Date()): { nextYear
   const currentYear = currentDate.getFullYear();
   
   // 距离下一年的天数
-  const nextYear = new Date(currentYear + 1, 0, 1);
+  const nextYear = new Date(currentYear + 1, 0, 1, 0, 0, 0, 0);
   const nextYearDays = getDaysDifference(currentDate, nextYear);
   
-  // 春节日期查找表（公历）
+  // 春节日期查找表（公历）- 更新到更准确的日期
   const springFestivalDates: Record<number, [number, number]> = {
+    2024: [1, 10], // 2024年2月10日
     2025: [0, 29], // 2025年1月29日
     2026: [1, 17], // 2026年2月17日
     2027: [1, 6],  // 2027年2月6日
     2028: [0, 26], // 2028年1月26日
     2029: [1, 13], // 2029年2月13日
+    2030: [1, 3],  // 2030年2月3日
   };
   
   // 确定应该使用哪一年的春节日期
   let targetYear = currentYear;
-  const [month, day] = springFestivalDates[currentYear] || [0, 29]; // 默认使用2025年日期
-  const currentYearSpringFestival = new Date(currentYear, month, day);
   
-  if (currentDate > currentYearSpringFestival) {
+  // 检查当前年份的春节是否已过
+  if (springFestivalDates[currentYear]) {
+    const [month, day] = springFestivalDates[currentYear];
+    const currentYearSpringFestival = new Date(currentYear, month, day, 0, 0, 0, 0);
+    
+    if (currentDate >= currentYearSpringFestival) {
+      targetYear = currentYear + 1;
+    }
+  } else {
+    // 如果没有当前年份的数据，默认使用下一年
     targetYear = currentYear + 1;
   }
   
   // 获取目标年份的春节日期
-  const [targetMonth, targetDay] = springFestivalDates[targetYear] || [0, 29];
-  const nextChineseNewYear = new Date(targetYear, targetMonth, targetDay);
+  const springFestivalData = springFestivalDates[targetYear];
+  let nextChineseNewYear: Date;
+  
+  if (springFestivalData) {
+    const [targetMonth, targetDay] = springFestivalData;
+    nextChineseNewYear = new Date(targetYear, targetMonth, targetDay, 0, 0, 0, 0);
+  } else {
+    // 如果没有数据，使用估算日期（通常在1月下旬到2月中旬）
+    nextChineseNewYear = new Date(targetYear, 1, 1, 0, 0, 0, 0); // 默认2月1日
+  }
+  
   const nextChineseNewYearDays = getDaysDifference(currentDate, nextChineseNewYear);
   
   return {
