@@ -74,21 +74,41 @@ export default function WorkShirkingReminder({ isDark = false }: WorkShirkingRem
   const [currentDate, setCurrentDate] = useState(new Date());
   const [timeUntilWorkEnd, setTimeUntilWorkEnd] = useState('');
   const [workProgress, setWorkProgress] = useState(0);
-  const [customWorkEndTime, setCustomWorkEndTime] = useState(18); // 默认下班时间18点
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // 生成提醒文本
   useEffect(() => {
-    setReminderText(generateReminderText(currentDate));
-    setTimeUntilWorkEnd(getTimeUntilWorkEnd(currentDate));
-    setWorkProgress(getWorkProgressPercentage(currentDate));
+    updateReminderText();
     
-    // 设置每秒自动更新
+    // 设置每秒自动更新时间和进度
     const updateInterval = setInterval(() => {
       setCurrentDate(new Date());
+      setTimeUntilWorkEnd(getTimeUntilWorkEnd(new Date()));
+      setWorkProgress(getWorkProgressPercentage(new Date()));
     }, 1000);
     
     return () => clearInterval(updateInterval);
-  }, [currentDate]);
+  }, []);
+  
+  // 更新提醒文本
+  const updateReminderText = () => {
+    setReminderText(generateReminderText(new Date()));
+  };
+  
+  // 刷新提醒文本
+  const refreshReminderText = () => {
+    setIsRefreshing(true);
+    
+    // 添加动画效果
+    setTimeout(() => {
+      updateReminderText();
+      setIsRefreshing(false);
+      toast.success('提醒内容已更新！', {
+        icon: '🔄',
+        position: 'top-center'
+      });
+    }, 600);
+  };
   
   // 复制文本到剪贴板
   const copyToClipboard = () => {
@@ -192,14 +212,45 @@ export default function WorkShirkingReminder({ isDark = false }: WorkShirkingRem
         "p-6",
         isDark ? "bg-gray-800" : "bg-white"
       )}>
-        <div className={cn(
-          "rounded-xl p-5 font-mono text-sm leading-relaxed whitespace-pre-wrap mb-6 min-h-[400px] transition-all duration-200",
-          isDark 
-            ? "bg-gray-900 text-gray-300 hover:bg-gray-900/80" 
-            : "bg-gray-50 text-gray-800 hover:bg-gray-100"
-        )}>
-          {reminderText || '加载中...'}
+        <div className="flex justify-between items-center mb-2">
+          <h2 className={cn(
+            "text-sm font-medium",
+            isDark ? "text-gray-300" : "text-gray-600"
+          )}>
+            今日摸鱼提醒
+          </h2>
+          <motion.button
+            onClick={refreshReminderText}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            disabled={isRefreshing}
+            className={cn(
+              "p-2 rounded-full transition-all",
+              isDark ? "text-blue-400 hover:bg-gray-700" : "text-blue-500 hover:bg-gray-100"
+            )}
+            title="刷新提醒内容"
+          >
+            <i className={cn(
+              "fa-solid fa-arrows-rotate",
+              isRefreshing && "animate-spin"
+            )}></i>
+          </motion.button>
         </div>
+        
+        <motion.div 
+          key={reminderText} // 当文本变化时触发动画
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className={cn(
+            "rounded-xl p-5 font-mono text-sm leading-relaxed whitespace-pre-wrap mb-6 min-h-[400px] transition-all duration-200",
+            isDark 
+              ? "bg-gray-900 text-gray-300 hover:bg-gray-900/80" 
+              : "bg-gray-50 text-gray-800 hover:bg-gray-100"
+          )}
+        >
+          {reminderText || '加载中...'}
+        </motion.div>
         
         {/* 按钮组 */}
         <div className="flex gap-2">
@@ -245,14 +296,17 @@ export default function WorkShirkingReminder({ isDark = false }: WorkShirkingRem
         </div>
       </div>
       
-      {/* 页脚提示 */}
+      {/* 页脚提示 - 动态显示摸鱼指数 */}
       <div className={cn(
         "px-6 py-3 text-center text-xs border-t",
         isDark 
           ? "bg-gray-900 text-gray-400 border-gray-700" 
           : "bg-gray-50 text-gray-500 border-gray-100"
       )}>
-        <p>今日摸鱼指数：★★★★☆ 适度摸鱼，工作更高效</p>
+        <p className="flex items-center justify-center">
+          <i className="fa-solid fa-fish text-blue-500 mr-2"></i>
+          <span>点击刷新按钮获取新的摸鱼提示</span>
+        </p>
       </div>
     </motion.div>
   );

@@ -215,6 +215,16 @@ export function getYearEndCountdowns(currentDate: Date = new Date()): { nextYear
   };
 }
 
+// 生成随机数（包含最小值，不包含最大值）
+function getRandomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+// 从数组中随机选择一个元素
+function getRandomElement<T>(array: T[]): T {
+  return array[getRandomInt(0, array.length)];
+}
+
 // 生成完整的提醒文本
 export function generateReminderText(currentDate: Date = new Date()): string {
   const dateStr = formatDate(currentDate);
@@ -233,52 +243,83 @@ export function generateReminderText(currentDate: Date = new Date()): string {
     greeting = "晚上好";
   }
   
+  // 每日不同的开场白模板
+  const openingTemplates = [
+    "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！工作再忙也要记得休息，毕竟身体是革命的本钱。",
+    "欢迎来到${dateStr}的摸鱼时间！${greeting}，今天也要合理安排工作与休息哦！",
+    "${greeting}，摸鱼人！今天是${dateStr}，${weekday}。记得多喝水，多走动，保持健康工作状态。",
+    "【摸鱼办】提醒您：${dateStr}，${weekday}。${greeting}！工作再努力，也别忘了给自己放个小假。",
+    "美好的一天从摸鱼开始！今天是${dateStr}，${weekday}。${greeting}，愿您工作顺利，摸鱼愉快！",
+    "${greeting}，今天是${dateStr}，${weekday}。摸鱼小贴士：每小时起身活动5分钟，健康工作每一天。",
+    "【摸鱼办】温馨提示：${dateStr}，${weekday}。${greeting}！适当摸鱼有助于提高工作效率哦！",
+    "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！记得劳逸结合，才能事半功倍。",
+    "又是一天摸鱼日！${dateStr}，${weekday}，${greeting}！让我们在忙碌工作中寻找小确幸。",
+    "时间过得真快，今天是${dateStr}，${weekday}。${greeting}，摸鱼人！享受此刻的宁静时光吧。",
+    "${greeting}！今天是${dateStr}，${weekday}。摸鱼办提醒您：适时休息，保持高效工作状态。",
+    "欢迎来到${dateStr}的摸鱼时刻！${greeting}，今天也要元气满满地工作与生活哦！",
+    "早安摸鱼人！今天是${dateStr}，${weekday}。新的一天，愿你工作轻松，摸鱼愉快！",
+    "${greeting}！${dateStr}，${weekday}。摸鱼办温馨提示：工作再忙，也别忘了抬头看看窗外的风景。",
+    "今天是${dateStr}，${weekday}。${greeting}！摸鱼人必备心态：工作是做不完的，但生活还要继续。",
+    "【摸鱼办】报道：${dateStr}，${weekday}。${greeting}！今日摸鱼指数：★★★★☆，适合轻度摸鱼。",
+    "又是元气满满的一天！今天是${dateStr}，${weekday}。${greeting}，摸鱼人！记得微笑面对工作挑战。",
+    "${greeting}，摸鱼人！${dateStr}，${weekday}。今日宜摸鱼，忌过度劳累，保持好心情最重要。",
+    "今天是${dateStr}，${weekday}。${greeting}！摸鱼办提醒您：合理分配时间，工作娱乐两不误。",
+    "欢迎来到${dateStr}的摸鱼频道！${greeting}，今天也是努力工作和适当摸鱼的一天！",
+    "${greeting}，今天是${dateStr}，${weekday}。摸鱼小技巧：把大任务分解成小目标，逐个击破。",
+    "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！愿您的工作像咖啡一样香醇，摸鱼像甜点一样美好。",
+    "【摸鱼办】温馨提示：${dateStr}，${weekday}。${greeting}！久坐伤腰，记得定时起身活动哦。",
+    "新的一天，新的摸鱼计划！今天是${dateStr}，${weekday}。${greeting}，摸鱼人！加油！",
+    "${greeting}！今天是${dateStr}，${weekday}。摸鱼办祝您工作顺利，摸鱼愉快，度过美好的一天！",
+    "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！工作再忙，也要给自己留一点放空的时间。",
+    "【摸鱼办】特别报道：${dateStr}，${weekday}。${greeting}！今日宜摸鱼，宜放松，宜微笑。",
+    "${greeting}，摸鱼人！今天是${dateStr}，${weekday}。记得工作再忙也要按时吃饭，保持健康作息。",
+    "今天是${dateStr}，${weekday}。${greeting}！摸鱼办提醒您：保持积极心态，工作再累也不怕。",
+    "欢迎来到${dateStr}的摸鱼小天地！${greeting}，愿您今天工作轻松，摸鱼愉快！"
+  ];
+  
+  // 随机健康提示
+  const healthTips = [
+    "有事没事起身去茶水间，去厕所，去廊道走走，别总在工位上坐着，钱是老板的，但健康是自己的。",
+    "久坐伤身，每工作1小时，请起来活动5分钟，保护颈椎和腰椎。",
+    "多喝水，少熬夜，保持良好作息，才能更高效地摸鱼。",
+    "工作间隙，记得眺望远处，让眼睛休息一下，保护视力很重要。",
+    "适当伸展四肢，活动颈部，避免长时间保持同一姿势导致肌肉僵硬。",
+    "记得定时喝水，成年人每天应摄入1500-2000ml水，保持身体水分平衡。",
+    "工作再忙，也别忘了按时吃饭，营养均衡是高效工作的基础。",
+    "摸鱼也要讲究方法，合理安排时间，劳逸结合才是王道。",
+    "压力过大时，深呼吸几次，闭目养神片刻，让大脑得到短暂休息。",
+    "记得保持良好坐姿，挺直腰背，避免长期弯腰驼背导致脊椎问题。"
+  ];
+  
+  // 随机摸鱼指数和评语
+  const fishingIndexes = [
+    "★★★★★ 今日摸鱼指数爆表，适合大胆摸鱼",
+    "★★★★☆ 今日摸鱼指数较高，适合适度摸鱼",
+    "★★★☆☆ 今日摸鱼指数一般，建议谨慎摸鱼",
+    "★★★★☆ 今日摸鱼指数良好，工作之余别忘放松",
+    "★★★★★ 绝佳摸鱼日，把握机会，快乐摸鱼",
+    "★★★☆☆ 摸鱼难度中等，需要一定技巧",
+    "★★★★☆ 摸鱼环境良好，可以放心摸鱼",
+    "★★★★★ 天时地利人和，摸鱼绝佳时机"
+  ];
+  
+  // 随机选择开场白
+  // 为了保证每次刷新都随机，不再使用日期作为种子
+  const openingLine = getRandomElement(openingTemplates)
+    .replace('${dateStr}', dateStr)
+    .replace('${weekday}', weekday)
+    .replace('${greeting}', greeting);
+  
+  // 随机选择健康提示
+  const healthTip = getRandomElement(healthTips);
+  
+  // 随机选择摸鱼指数
+  const fishingIndex = getRandomElement(fishingIndexes);
+  
   // 构建文本内容
-   // 每日不同的开场白模板
-    const openingTemplates = [
-      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！工作再忙也要记得休息，毕竟身体是革命的本钱。",
-      "欢迎来到${dateStr}的摸鱼时间！${greeting}，今天也要合理安排工作与休息哦！",
-      "${greeting}，摸鱼人！今天是${dateStr}，${weekday}。记得多喝水，多走动，保持健康工作状态。",
-      "【摸鱼办】提醒您：${dateStr}，${weekday}。${greeting}！工作再努力，也别忘了给自己放个小假。",
-      "美好的一天从摸鱼开始！今天是${dateStr}，${weekday}。${greeting}，愿您工作顺利，摸鱼愉快！",
-      "${greeting}，今天是${dateStr}，${weekday}。摸鱼小贴士：每小时起身活动5分钟，健康工作每一天。",
-      "【摸鱼办】温馨提示：${dateStr}，${weekday}。${greeting}！适当摸鱼有助于提高工作效率哦！",
-      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！记得劳逸结合，才能事半功倍。",
-      "又是一天摸鱼日！${dateStr}，${weekday}，${greeting}！让我们在忙碌工作中寻找小确幸。",
-      "时间过得真快，今天是${dateStr}，${weekday}。${greeting}，摸鱼人！享受此刻的宁静时光吧。",
-      "${greeting}！今天是${dateStr}，${weekday}。摸鱼办提醒您：适时休息，保持高效工作状态。",
-      "欢迎来到${dateStr}的摸鱼时刻！${greeting}，今天也要元气满满地工作与生活哦！",
-      "早安摸鱼人！今天是${dateStr}，${weekday}。新的一天，愿你工作轻松，摸鱼愉快！",
-      "${greeting}！${dateStr}，${weekday}。摸鱼办温馨提示：工作再忙，也别忘了抬头看看窗外的风景。",
-      "今天是${dateStr}，${weekday}。${greeting}！摸鱼人必备心态：工作是做不完的，但生活还要继续。",
-      "【摸鱼办】报道：${dateStr}，${weekday}。${greeting}！今日摸鱼指数：★★★★☆，适合轻度摸鱼。",
-      "又是元气满满的一天！今天是${dateStr}，${weekday}。${greeting}，摸鱼人！记得微笑面对工作挑战。",
-      "${greeting}，摸鱼人！${dateStr}，${weekday}。今日宜摸鱼，忌过度劳累，保持好心情最重要。",
-      "今天是${dateStr}，${weekday}。${greeting}！摸鱼办提醒您：合理分配时间，工作娱乐两不误。",
-      "欢迎来到${dateStr}的摸鱼频道！${greeting}，今天也是努力工作和适当摸鱼的一天！",
-      "${greeting}，今天是${dateStr}，${weekday}。摸鱼小技巧：把大任务分解成小目标，逐个击破。",
-      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！愿您的工作像咖啡一样香醇，摸鱼像甜点一样美好。",
-      "【摸鱼办】温馨提示：${dateStr}，${weekday}。${greeting}！久坐伤腰，记得定时起身活动哦。",
-      "新的一天，新的摸鱼计划！今天是${dateStr}，${weekday}。${greeting}，摸鱼人！加油！",
-      "${greeting}！今天是${dateStr}，${weekday}。摸鱼办祝您工作顺利，摸鱼愉快，度过美好的一天！",
-      "今天是${dateStr}，${weekday}。${greeting}，摸鱼人！工作再忙，也要给自己留一点放空的时间。",
-      "【摸鱼办】特别报道：${dateStr}，${weekday}。${greeting}！今日宜摸鱼，宜放松，宜微笑。",
-      "${greeting}，摸鱼人！今天是${dateStr}，${weekday}。记得工作再忙也要按时吃饭，保持健康作息。",
-      "今天是${dateStr}，${weekday}。${greeting}！摸鱼办提醒您：保持积极心态，工作再累也不怕。",
-      "欢迎来到${dateStr}的摸鱼小天地！${greeting}，愿您今天工作轻松，摸鱼愉快！"
-    ];
-   
-   // 根据一年中的第几天选择不同的开场白，确保每天不同但整天保持一致
-   const dayOfYear = getDayOfYear(currentDate);
-    // 使用更复杂的计算确保每天不同的开场白
-    const templateIndex = (dayOfYear * 31) % openingTemplates.length;
-    const openingLine = openingTemplates[templateIndex]
-     .replace('${dateStr}', dateStr)
-     .replace('${weekday}', weekday)
-     .replace('${greeting}', greeting);
-   
-   let text = `【摸鱼办】提醒您：
-${openingLine}有事没事起身去茶水间，去厕所，去廊道走走，别总在工位上坐着，钱是老板的，但健康是自己的。
+  let text = `【摸鱼办】提醒您：
+${openingLine}
+${healthTip}
 温馨提示：
 `;
   
@@ -301,7 +342,9 @@ ${openingLine}有事没事起身去茶水间，去厕所，去廊道走走，别
   
   // 添加年底倒计时
   text += `距离【${currentDate.getFullYear() + 1}年】还有：${yearEnds.nextYear}天
-距离【下次过年】还有：${yearEnds.nextChineseNewYear}天`;
+距离【下次过年】还有：${yearEnds.nextChineseNewYear}天
+
+${fishingIndex}`;
   
   return text;
 }
