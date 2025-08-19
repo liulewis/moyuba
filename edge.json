@@ -1,7 +1,10 @@
 {
   "build": {
     "command": "npm install -g pnpm && pnpm install --no-frozen-lockfile && pnpm build",
-    "outputDir": "dist"
+    "outputDir": "dist",
+    "env": {
+      "NODE_ENV": "production"
+    }
   },
   "router": {
     "rules": [
@@ -14,5 +17,25 @@
   },
   "server": {
     "port": 8080
-  }
+  },
+  "headers": [
+    {
+      "source": "**/*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "*.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
 }
